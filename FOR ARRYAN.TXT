@@ -1,0 +1,11 @@
+Before you start: Run git pull". This grabs all the changes I made so you’re working on the latest version.
+Do your thing: Write your code and test it.
+When you’re happy with a change:
+git add . (This 'stages' your changes).
+git commit -m "brief description of what you did... 
+git push makes changes to the github (its also forked as a version so you cant fuck it up). 
+THIS IS THE FUCKING WAY OF THE GODS IN CYBER WORLD
+nigaa
+
+
+
