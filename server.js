@@ -26,6 +26,7 @@ function startServer(port = 3000) {
     const DATA_FILE = path.join(BASE_PATH, 'data.json');
     const CHATS_DIR = path.join(BASE_PATH, 'Chats');
     const DEFAULT_FILES_DIR = path.join(BASE_PATH, 'files');
+    const TEMP_UPLOADS_DIR = path.join(BASE_PATH, 'temp_uploads');
 
     async function ensureChatsDir() {
         try { await fs.mkdir(CHATS_DIR, { recursive: true }); } catch (e) { }
@@ -33,6 +34,7 @@ function startServer(port = 3000) {
 
     async function ensureFilesDir() {
         try { await fs.mkdir(DEFAULT_FILES_DIR, { recursive: true }); } catch (e) { }
+        try { await fs.mkdir(TEMP_UPLOADS_DIR, { recursive: true }); } catch (e) { }
     }
 
     async function loadData() {
@@ -280,9 +282,22 @@ Answer based on the content above. Be thorough and helpful. Do not mention OCR o
         if (!filePath) return res.status(400).send('Path required');
         try {
             const data = await loadData();
-            const fullPath = path.join(data.config.filesDir, filePath);
+            let fullPath = path.join(data.config.filesDir, filePath);
             if (!fullPath.startsWith(data.config.filesDir)) {
                 return res.status(403).send('Access denied');
+            }
+
+            // Fallback to temp_uploads if it doesn't exist in local space
+            try {
+                await fs.access(fullPath);
+            } catch (e) {
+                const tempPath = path.join(TEMP_UPLOADS_DIR, filePath);
+                try {
+                    await fs.access(tempPath);
+                    fullPath = tempPath;
+                } catch (e2) {
+                    return res.status(404).send('File not found');
+                }
             }
             const ext = path.extname(fullPath).toLowerCase();
             const mimeMap = {
@@ -390,9 +405,21 @@ Answer based on the content above. Be thorough and helpful. Do not mention OCR o
 
         try {
             const data = await loadData();
-            const fullPath = path.join(data.config.filesDir, filePath);
+            let fullPath = path.join(data.config.filesDir, filePath);
             if (!fullPath.startsWith(data.config.filesDir)) {
                 return res.status(403).json({ error: 'Access denied' });
+            }
+
+            try {
+                await fs.access(fullPath);
+            } catch (e) {
+                const tempPath = path.join(TEMP_UPLOADS_DIR, filePath);
+                try {
+                    await fs.access(tempPath);
+                    fullPath = tempPath;
+                } catch (e2) {
+                    return res.status(404).json({ error: 'File not found' });
+                }
             }
 
             const ext = path.extname(fullPath).toLowerCase();
@@ -422,11 +449,21 @@ Answer based on the content above. Be thorough and helpful. Do not mention OCR o
 
     const storage = multer.diskStorage({
         destination: async (req, file, cb) => {
-            const data = await loadData();
-            cb(null, data.config.filesDir);
+            if (req.query.target === 'temp') {
+                cb(null, TEMP_UPLOADS_DIR);
+            } else {
+                const data = await loadData();
+                cb(null, data.config.filesDir);
+            }
         },
         filename: (req, file, cb) => {
-            cb(null, file.originalname);
+            if (req.query.target === 'temp') {
+                const ext = path.extname(file.originalname);
+                const name = path.basename(file.originalname, ext);
+                cb(null, `${name}-${Date.now()}${ext}`);
+            } else {
+                cb(null, file.originalname);
+            }
         }
     });
     const upload = multer({ storage });
@@ -434,7 +471,8 @@ Answer based on the content above. Be thorough and helpful. Do not mention OCR o
     app.post('/api/files/upload', upload.single('file'), async (req, res) => {
         try {
             if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-            res.json({ success: true, name: req.file.originalname, path: req.file.originalname });
+            
+            res.json({ success: true, name: req.file.originalname, path: req.file.filename });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

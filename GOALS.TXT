@@ -1,0 +1,22 @@
+1. Get the small llama3.2 model to work well, have proper context sorting and management of files, parse through pdf files then 
+send the context to another model for further analysis
+2. the smaller models are good for peoples iphones and shitty computers so it should be prioritezed
+3. the larger thinking models (under 8b paramater) can be used if the users specs are great so i need some sort of spec grab and analysis
+4. Reasoning shouldnt require large models but rather math should be pre given formulas(python) instead of llm models doing it over and over
+5. MATH mode for school
+6. LETS FUCK OVER CHEGG BY ALLOWING STUDENT SOLUTIONS TO BE VISIBLE BY ANYONE FOR FREE ALL INFORMATION SHOULD BE FREE OF USE. TEXTBOOKS FREE
+7. THIS APP SHOULD BE THE STUDENTS GO TO APP FOR EVERYTHING. IT SHOULD BE THE REASON PEOPLE STOP USING CHEGG AND START USING THIS. 
+8. Need to make a general web connection to a domain and ill host the server in texas on my better wifi  (free website)
+9.  agent mode needs to be abe to create pdf files and edit them easily. Id like this to be an all in one simple app
+10. once web connection is established, code editing and agent creation (specifically with the llama model) are open source 
+meaning people can make their own simple models and they'd be accsessable to ANYONE.
+
+THE ACTUAL GOAL IS TO GET SMALL LOCAL LLM MODELS TO BE SUPER EFFICIENT USING DATA HANDELING AND PYTHON, THATS ALL THAT IS NEEDED TO MAKE SOMETHING WORK 
+super personalized chat gpt that doesnt take any of the users DATA
+
+
+maybe add a background agent mode for peoples slower gpu processing speed that does high level shit offline
+
+
+agent mode should have some sort of link to outside apps that will be analyzed and a notification is sent to the phone for example if someone automates that
+

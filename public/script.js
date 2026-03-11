@@ -1058,7 +1058,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                const response = await fetch('/api/files/upload', {
+                const target = isFilesTab ? 'local' : 'temp';
+                const response = await fetch(`/api/files/upload?target=${target}`, {
                     method: 'POST',
                     body: formData
                 });

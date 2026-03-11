@@ -1,0 +1,6 @@
+1. latex doesnt stay consistent in the response
+2. visual model is slow as fuck
+3. proper data handeling using SQL is needed rather than json i feel like
+4. if LLM can use SQL and properly organize the data this should feel like real chatgpt.
+
+Agent is not a thing yet

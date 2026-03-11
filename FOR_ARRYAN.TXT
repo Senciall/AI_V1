@@ -1,11 +1,20 @@
+youll want to make a new file folder do download all this 
+
 Before you start: Run git pull". This grabs all the changes I made so you’re working on the latest version.
 Do your thing: Write your code and test it.
 When you’re happy with a change:
-git add . (This 'stages' your changes).
+git add 
 git commit -m "brief description of what you did... 
 git push makes changes to the github (its also forked as a version so you cant fuck it up). 
 THIS IS THE FUCKING WAY OF THE GODS IN CYBER WORLD
 nigaa
 
+
+
+for example::::::: git add . ; git commit -m "Renamed and updated guide for Arryan" ; git push
+just ask gpt how to push if u dont know
+
+ELECRON IS THE EXE CREATOR THING THAT MAKES ACTUAL APPS... NEED TO do [npm run electron:dev] to make the app run each change needs a reset
+the local host 3000 is the local server your computer uses. just have the AI set that up tho if ur computer fuckes up
 
 
