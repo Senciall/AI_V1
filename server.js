@@ -5,7 +5,7 @@ const multer = require('multer');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const http = require('http');
-const pdf = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 const XLSX = require('xlsx');
 const Tesseract = require('tesseract.js');
 
@@ -424,9 +424,20 @@ Answer based on the content above. Be thorough and helpful. Do not mention OCR o
 
             const ext = path.extname(fullPath).toLowerCase();
             if (ext === '.pdf') {
-                const dataBuffer = await fs.readFile(fullPath);
-                const pdfData = await pdf(dataBuffer);
-                return res.json({ content: pdfData.text });
+                try {
+                    const dataBuffer = await fs.readFile(fullPath);
+                    const parser = new PDFParse({ data: dataBuffer });
+                    const pdfData = await parser.getText();
+                    await parser.destroy();
+                    
+                    if (!pdfData.text || pdfData.text.trim().length === 0) {
+                        return res.json({ content: "[Warning: No text could be extracted from this PDF. It might be a scanned image or protected.]" });
+                    }
+                    return res.json({ content: pdfData.text });
+                } catch (pdfErr) {
+                    console.error(`Error parsing PDF ${filePath}:`, pdfErr);
+                    return res.status(500).json({ error: `Failed to parse PDF: ${pdfErr.message}` });
+                }
             }
 
             if (['.xlsx', '.xls', '.csv'].includes(ext)) {

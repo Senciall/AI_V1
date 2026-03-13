@@ -1,0 +1,3 @@
+1. need to have all the math formulas organized so that the llm 100% uses them correctly 
+2. want a "chat mode" for "math" "shcool" "data' etc that specifically opens a python llm manage file for that mode where the llm is better at doing task in that mode 
+

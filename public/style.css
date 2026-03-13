@@ -907,13 +907,11 @@ body {
 
 /* Animations and centering for math blocks */
 .katex-display {
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
     padding: 0.5rem 0;
     margin: 0.5rem 0;
-    text-align: center;
-    /* Center math visually */
-    display: block;
+    display: flex;
+    justify-content: center;
     width: 100%;
 }
 
