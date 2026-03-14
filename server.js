@@ -170,6 +170,9 @@ function startServer(port = 3000) {
     const publicDir = path.join(__dirname, 'public');
     app.use(express.static(publicDir));
 
+    // Mount agent-specific routes (separate file for safety)
+    require('./server-agent')(app, TEMP_UPLOADS_DIR, fs);
+
     app.post('/api/chat/vision', express.json({ limit: '100mb' }), async (req, res) => {
         const { messages, images, model: requestedModel } = req.body;
         const visionModel = requestedModel || "gemma3:latest";
@@ -229,7 +232,7 @@ For any mathematical expressions or formulas, use LaTeX: $...$ for inline and $$
         }
     });
 
-    app.post('/api/chat', express.json(), async (req, res) => {
+    app.post('/api/chat', express.json({ limit: '50mb' }), async (req, res) => {
         const { messages, stream, chatId, model: requestedModel } = req.body;
         const model = requestedModel || "gemma3:latest";
 
