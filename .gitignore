@@ -1,7 +1,11 @@
 node_modules/
 dist/
+user_data/
+temp_uploads/
+OLD_APPLICATION/
 Chats/
 files/
+Workspaces/
 *.log
 .env
 Thumbs.db

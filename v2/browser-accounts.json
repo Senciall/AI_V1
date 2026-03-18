@@ -1,0 +1,10 @@
+{
+  "google.com": {
+    "domain": "google.com",
+    "service": "custom",
+    "loggedIn": true,
+    "unreadCount": 0,
+    "displayName": "Google",
+    "updatedAt": "2026-03-17T13:58:32.220Z"
+  }
+}

@@ -1,79 +1,16 @@
 {
-  "name": "chatgpt20",
-  "version": "1.0.0",
-  "description": "Local ChatGPT clone for Ollama",
-  "main": "main.js",
+  "name": "myai",
+  "version": "2.0.0",
+  "description": "MyAI — Local Ollama chat app",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "electron:dev": "electron .",
-    "electron:build": "electron-builder --win"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "express-session": "^1.19.0",
     "http-proxy-middleware": "^2.0.6",
     "multer": "^2.1.1",
     "pdf-parse": "^2.4.5",
-    "tesseract.js": "^7.0.0",
     "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-builder": "^25.0.0"
-  },
-  "build": {
-    "appId": "com.chatgpt20.app",
-    "productName": "ChatGPT 2.0",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "server.js",
-      "ollama-manager.js",
-      "public/**/*",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "Chats",
-        "to": "Chats",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "files",
-        "to": "files",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": null,
-      "signtoolOptions": {
-        "signingHashAlgorithms": []
-      },
-      "sign": null
-    },
-    "forceCodeSigning": false,
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "ChatGPT 2.0"
-    }
   }
 }

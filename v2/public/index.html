@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyAI</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Leaflet maps for place cards -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Markdown -->
+  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- KaTeX for math -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/marked-katex-extension/lib/index.umd.js"></script>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <h1>MyAI</h1>
+      <button id="new-chat-btn" title="New Chat">+ New</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Chats</div>
+      <ul id="chat-list"></ul>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="section-label">
+        Files
+        <button id="refresh-files-btn" class="tiny-btn" title="Refresh">&#x21BB;</button>
+        <button id="upload-toggle-btn" class="tiny-btn" title="Upload">+</button>
+      </div>
+      <div id="upload-zone" class="upload-zone" style="display:none">
+        <label for="file-upload-input" class="upload-label">Drop or browse files</label>
+      </div>
+      <div id="file-tree" class="file-tree"></div>
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="user-badge">&#9679; Local User</span>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN AREA ═══ -->
+  <main id="main">
+
+    <!-- Top Tabs -->
+    <nav id="top-tabs">
+      <button class="tab active" data-tab="chat">Chat</button>
+      <button class="tab" data-tab="browser">Browser</button>
+      <button class="tab" data-tab="pdf">PDF Studio</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <!-- ─── CHAT TAB ─── -->
+    <section id="tab-chat" class="tab-panel active">
+      <div id="chat-messages" class="messages-area">
+        <div id="empty-state" class="empty-state">
+          <h2>MyAI</h2>
+          <p>Powered by Ollama Local Models</p>
+        </div>
+      </div>
+      <div class="input-bar">
+        <div id="attached-files" class="attached-files"></div>
+        <form id="chat-form" class="chat-form">
+          <div id="quote-reference" class="quote-reference" style="display:none">
+            <div class="quote-ref-label">Referring to:</div>
+            <div id="quote-reference-text" class="quote-ref-text"></div>
+            <button type="button" id="quote-reference-close" class="quote-ref-close">&times;</button>
+          </div>
+          <div class="input-box">
+            <div class="input-top-row">
+              <textarea id="chat-input" rows="1" placeholder="Message MyAI..."></textarea>
+              <button type="submit" id="chat-send-btn" class="send-btn" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <div class="input-bottom-row">
+              <select id="model-select" class="model-select">
+                <option value="gemma3:latest">gemma3:latest</option>
+              </select>
+              <button type="button" id="chat-attach-btn" class="icon-btn" title="Attach files">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+              </button>
+              <button type="button" id="web-mode-toggle" class="icon-btn web-toggle-btn" title="Web mode OFF">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+                <span class="web-toggle-label">Web</span>
+              </button>
+            </div>
+          </div>
+        </form>
+        <div id="status-bar" class="status-bar"></div>
+      </div>
+    </section>
+
+
+    <!-- ─── BROWSER TAB ─── -->
+    <section id="tab-browser" class="tab-panel browser-panel">
+
+      <!-- Toolbar -->
+      <div class="browser-toolbar">
+        <div class="browser-nav-btns">
+          <button id="browser-back"    class="browser-nav-btn" title="Back"    disabled>&#8592;</button>
+          <button id="browser-forward" class="browser-nav-btn" title="Forward" disabled>&#8594;</button>
+          <button id="browser-reload"  class="browser-nav-btn" title="Reload">&#8635;</button>
+          <button id="browser-home"    class="browser-nav-btn" title="Home">&#8962;</button>
+        </div>
+        <input id="browser-address-bar" type="text" class="browser-address" placeholder="Search or enter address...">
+        <button id="browser-panel-toggle" class="browser-nav-btn" title="Toggle side panel">&#9776;</button>
+      </div>
+
+      <!-- Body: iframe + side panel -->
+      <div class="browser-body">
+
+        <div class="browser-iframe-wrap">
+          <div id="browser-loading" class="browser-loading" style="display:none">Loading…</div>
+          <webview
+            id="browser-iframe"
+            class="browser-iframe"
+            src="about:blank"
+          ></webview>
+        </div>
+
+        <aside class="browser-side-panel">
+          <div class="side-panel-section">
+            <div class="side-panel-label">Connected Accounts</div>
+            <div id="accounts-panel" class="accounts-list">
+              <p class="no-accounts">Browse and log in to sites to connect accounts.</p>
+            </div>
+          </div>
+          <div class="side-panel-section">
+            <div class="side-panel-label">
+              Notifications
+              <button id="notif-refresh-btn" class="tiny-btn" title="Refresh">&#8635;</button>
+            </div>
+            <div id="notifications-panel" class="notifications-list">
+              <p class="no-accounts">No notifications yet.</p>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- ─── PDF STUDIO TAB ─── -->
+    <section id="tab-pdf" class="tab-panel">
+
+      <!-- ═══ Editor Toolbar ═══ -->
+      <div class="pdf-editor-bar" id="pdf-editor-bar">
+
+        <!-- Navigate -->
+        <div class="peb-group">
+          <span class="peb-label">Navigate</span>
+          <div class="peb-btns">
+            <button class="peb-btn active" data-tool="select" title="Select — drag to select text">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M2 2l10 5-5 1-2 5z"/></svg>
+            </button>
+            <button class="peb-btn" data-tool="hand" title="Pan — scroll freely">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3a1 1 0 0 1 1 1v5h4V7a1 1 0 1 1 2 0v2h1a2 2 0 0 1 2 2v4a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6V9a1 1 0 0 1 1-1h1V4a1 1 0 0 1 1-1z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="peb-sep"></div>
+
+        <!-- Annotate -->
+        <div class="peb-group">
+          <span class="peb-label">Annotate</span>
+          <div class="peb-btns">
+            <button class="peb-btn" data-tool="highlight" title="Highlight — drag over text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v2H3zm4-4l7-7 3 3-7 7H7v-3z"/><path d="M17 4l3 3-1.5 1.5L15.5 5.5z" opacity=".5"/></svg>
+            </button>
+            <button class="peb-btn" data-tool="ink" title="Ink — freehand draw">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l11 11"/><circle cx="11" cy="11" r="2"/></svg>
+            </button>
+            <button class="peb-btn" data-tool="note" title="Sticky Note — click to place">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v16l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="peb-sep"></div>
+
+        <!-- Content Editing -->
+        <div class="peb-group">
+          <span class="peb-label">Edit</span>
+          <div class="peb-btns">
+            <button class="peb-btn peb-text-btn" data-tool="textbox" title="Text Box — click to insert">T</button>
+            <button class="peb-btn" data-tool="edittext" title="Edit Text — click existing text to modify">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="peb-sep"></div>
+
+        <!-- Shapes -->
+        <div class="peb-group">
+          <span class="peb-label">Shapes</span>
+          <div class="peb-btns">
+            <button class="peb-btn" data-tool="line" title="Line — drag to draw">
+              <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="20" x2="20" y2="4"/></svg>
+            </button>
+            <button class="peb-btn" data-tool="rect" title="Rectangle — drag to draw">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </button>
+            <button class="peb-btn" data-tool="callout" title="Callout bubble — drag to draw">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="peb-sep"></div>
+
+        <!-- Page Management -->
+        <div class="peb-group">
+          <span class="peb-label">Pages</span>
+          <div class="peb-btns">
+            <button class="peb-btn" data-tool="rotate" title="Rotate — click a page to rotate 90°">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.5 2v6h-6M2.5 22v-6h6"/><path d="M22 13A10 10 0 0 1 4.9 4.6M2 11A10 10 0 0 1 19.1 19.4"/></svg>
+            </button>
+            <button class="peb-btn peb-danger" data-tool="deletepage" title="Delete Page — click a page to remove">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="peb-sep"></div>
+
+        <!-- AI Workflows -->
+        <div class="peb-group">
+          <span class="peb-label">AI</span>
+          <div class="peb-btns">
+            <button class="peb-btn peb-ai" data-tool="ai-rewrite" title="Smart Rewrite — drag to select, AI rewrites instantly">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9 9H2l6 4-2 7 6-4 6 4-2-7 6-4h-7z"/></svg>
+              Rewrite
+            </button>
+            <button class="peb-btn peb-ai" data-tool="ai-annotate" title="AI Annotate — drag to select, AI generates a note">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Annotate
+            </button>
+          </div>
+        </div>
+
+        <!-- Color picker (visible for ink / highlight / shape tools) -->
+        <div class="peb-colors" id="peb-colors" style="display:none">
+          <div class="peb-sep"></div>
+          <button class="peb-swatch active" data-color="#facc15" style="--sw:#facc15" title="Yellow"></button>
+          <button class="peb-swatch" data-color="#f87171" style="--sw:#f87171" title="Red"></button>
+          <button class="peb-swatch" data-color="#60a5fa" style="--sw:#60a5fa" title="Blue"></button>
+          <button class="peb-swatch" data-color="#4ade80" style="--sw:#4ade80" title="Green"></button>
+          <button class="peb-swatch" data-color="#c084fc" style="--sw:#c084fc" title="Purple"></button>
+          <button class="peb-swatch" data-color="#111111" style="--sw:#111" title="Black"></button>
+        </div>
+
+        <div class="peb-spacer"></div>
+
+        <!-- File actions -->
+        <button id="pdf-open-btn" class="peb-file-btn">Open PDF</button>
+        <button id="pdf-save-btn" class="peb-file-btn peb-save" style="display:none">💾 Save</button>
+        <span id="pdf-status" class="pdf-status-text"></span>
+      </div>
+
+      <!-- ═══ Body: viewer + properties panel ═══ -->
+      <div class="pdf-studio-body">
+
+        <!-- PDF viewer -->
+        <div id="pdf-viewer-wrap" class="pdf-viewer-wrap">
+          <div id="pdf-drop-zone" class="pdf-drop-zone">
+            <div class="pdf-drop-icon">📄</div>
+            <div class="pdf-drop-label">Drop a PDF here or click <strong>Open PDF</strong></div>
+          </div>
+          <div id="pdf-pages" class="pdf-pages"></div>
+        </div>
+
+        <!-- Properties / AI panel -->
+        <aside class="pdf-props-panel" id="pdf-props-panel">
+
+          <!-- Empty state -->
+          <div class="ppp-empty" id="ppp-empty">
+            <div class="ppp-hint-icon" id="ppp-hint-icon">↖</div>
+            <div class="ppp-hint-text" id="ppp-hint-text">Use the <strong>Select</strong> tool and drag over text to activate AI tools</div>
+          </div>
+
+          <!-- Selection context (shown when text is selected) -->
+          <div class="ppp-selection" id="ppp-selection" style="display:none">
+
+            <div class="ppp-sel-badge">
+              <div class="ppp-sel-top">
+                <span class="ppp-sel-label">✂ Selection</span>
+                <button id="ppp-sel-clear" class="ppp-sel-clear">✕ Clear</button>
+              </div>
+              <div class="ppp-sel-text" id="ppp-sel-text"></div>
+            </div>
+
+            <div class="ppp-section">
+              <div class="ppp-section-label">AI WORKFLOWS</div>
+              <div class="ppp-ai-tools">
+                <button class="ppp-ai-btn" data-prompt="Improve the writing quality and clarity while keeping the same meaning. Return only the improved text.">✨ Smart Rewrite</button>
+                <button class="ppp-ai-btn" data-prompt="Explain what this text means in plain, simple language.">💡 Explain</button>
+                <button class="ppp-ai-btn" data-prompt="Fix all grammar, spelling, and punctuation. Return only the corrected text.">✓ Fix Grammar</button>
+                <button class="ppp-ai-btn" data-prompt="Summarize this in 2–3 sentences.">📋 Summarize</button>
+                <button class="ppp-ai-btn" data-prompt="Rewrite in a formal, professional tone. Return only the rewritten text.">💼 Make Professional</button>
+                <button class="ppp-ai-btn" data-prompt="Condense to half the length while keeping all key information. Return only the condensed text.">✂ Condense</button>
+              </div>
+            </div>
+
+            <div class="ppp-section">
+              <div class="ppp-section-label">TRANSLATE</div>
+              <div class="ppp-translate">
+                <select id="ppp-lang" class="ppp-select">
+                  <option>Spanish</option><option>French</option><option>German</option>
+                  <option>Italian</option><option>Portuguese</option>
+                  <option>Mandarin Chinese</option><option>Japanese</option>
+                  <option>Korean</option><option>Arabic</option><option>Russian</option>
+                </select>
+                <button id="ppp-translate-btn" class="ppp-go-btn">Go</button>
+              </div>
+            </div>
+
+            <div class="ppp-section">
+              <div class="ppp-section-label">CUSTOM INSTRUCTION</div>
+              <textarea id="ppp-custom" class="ppp-custom" rows="3"
+                placeholder="e.g. Convert to bullet points, write a follow-up email, turn into code…"></textarea>
+              <button id="ppp-run-btn" class="ppp-run-btn">Run  <span class="ppp-shortcut">Ctrl+↵</span></button>
+            </div>
+
+          </div>
+
+          <!-- Result -->
+          <div class="ppp-result" id="ppp-result" style="display:none">
+            <div class="ppp-result-head">
+              <span class="ppp-result-label">Result</span>
+              <div class="ppp-result-acts">
+                <button id="ppp-apply-btn" class="ppp-apply-btn" style="display:none">✔ Apply to PDF</button>
+                <button id="ppp-result-close" class="ppp-close-btn">✕</button>
+              </div>
+            </div>
+            <div class="ppp-result-body" id="ppp-result-body"></div>
+          </div>
+
+        </aside>
+      </div>
+    </section>
+
+    <!-- ─── SETTINGS TAB ─── -->
+    <section id="tab-settings" class="tab-panel">
+      <div class="settings-wrap">
+        <h2>Settings</h2>
+
+        <fieldset>
+          <legend>Your Location</legend>
+          <p class="hint">Used by web mode to find nearby places (city, neighbourhood, or full address).</p>
+          <div class="row">
+            <input type="text" id="user-location-input" placeholder="e.g. Toronto, ON or 123 Main St">
+            <button id="save-location-btn" class="tool-btn primary">Save</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Local Files Directory</legend>
+          <p class="hint">Folder the AI can access for reading files.</p>
+          <div class="row">
+            <input type="text" id="files-dir-input" placeholder="e.g. C:\Users\Docs\MyFiles">
+            <button id="save-dir-btn" class="tool-btn primary">Save Path</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Install Model</legend>
+          <p class="hint">Enter any Ollama model name.</p>
+          <div class="row">
+            <input type="text" id="install-model-input" placeholder="e.g. gemma2:2b">
+            <button id="install-model-btn" class="tool-btn primary">Install</button>
+          </div>
+          <div id="install-progress" class="progress-bar" style="display:none">
+            <div id="install-fill" class="progress-fill"></div>
+            <span id="install-status"></span>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Installed Models</legend>
+          <div id="installed-models" class="model-list">Loading...</div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Model Library</legend>
+          <p class="hint">Browse popular models. Installed ones are marked.</p>
+          <div class="catalog-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="general">General</button>
+            <button class="filter-btn" data-filter="code">Code</button>
+            <button class="filter-btn" data-filter="vision">Vision</button>
+            <button class="filter-btn" data-filter="embedding">Embedding</button>
+          </div>
+          <div id="model-catalog" class="model-catalog"></div>
+        </fieldset>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Hidden selects used by JS for vision model tracking -->
+<select id="vision-model-select" style="display:none"><option value="gemma3:latest">gemma3:latest</option></select>
+
+<!-- File inputs at top level for fast OS dialog opening -->
+<input type="file" id="file-upload-input" multiple hidden>
+<input type="file" id="chat-file-input" multiple hidden>
+<input type="file" id="pdf-file-input" accept=".pdf" hidden>
+
+<script defer src="app.js"></script>
+<script defer src="browser.js"></script>
+<script defer src="pdf-editor.js"></script>
+
+<!-- Account name dialog -->
+<div id="account-name-dialog" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      New Account Detected
+      <button class="close-btn" id="account-dialog-close">&times;</button>
+    </div>
+    <p class="modal-hint">Looks like you just logged in. Give this account a name so the AI can reference it.</p>
+    <form id="account-name-form" class="modal-form">
+      <label for="account-display-name">Account name</label>
+      <input type="text" id="account-display-name" placeholder="e.g. Work Gmail">
+      <input type="hidden" id="account-dialog-domain">
+      <div class="modal-actions">
+        <button type="button" class="tool-btn" id="account-dialog-skip">Skip</button>
+        <button type="submit" class="tool-btn primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

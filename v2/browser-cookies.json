@@ -1,0 +1,28 @@
+{
+  "google.com": {
+    "__Secure-STRP": {
+      "name": "__Secure-STRP",
+      "value": "AEEP7gJbcCfrtlirSvH6xcIvSmZ4hffg5t7Yc9SoMczFeLzs5Y8uCVc4dJLJQ-11PJesdpstt9OLGuWQdWbSOcAj81bo6F28PsTw",
+      "expires": 1773756214,
+      "path": "/"
+    },
+    "AEC": {
+      "name": "AEC",
+      "value": "AaJma5toJFsfcD4Mz8QiLuyvxuAkVwsiSnAWbJiRLyAIHpSfJ_nSWxbEbWg",
+      "expires": 1789307647,
+      "path": "/"
+    },
+    "NID": {
+      "name": "NID",
+      "value": "529=EBJnXSHE5j-gnjBBZuLpKahjLSSYfAWglBON7ZoDiZd-D0gA9fgk_9LTT4E_TVkAJwb9tBC16kBkzU1JSj-Mrcb3fLDfUkt5oHMNWli5SxhvxpYNof7P7nMMBZCUxpgzk3TzzKo9WL-Fc-pR9QySrZfdmE0slFmi8nSV-o7J15vvD-aCVZKta8VCBCZW-3XyKHtCziNlLEYXYVvzX4GVYVHRO9GWfvW7Le1IQvaE",
+      "expires": 1789566847,
+      "path": "/"
+    },
+    "__Secure-BUCKET": {
+      "name": "__Secure-BUCKET",
+      "value": "CPYF",
+      "expires": 1789307647,
+      "path": "/"
+    }
+  }
+}
